@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Powimo démo AIME 2000</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&family=Roboto:wght@400;500&display=swap">
+<style>
+/* Layout: Powimo-like app shell — icon rail left, red module block + search on top, grey canvas with white cards.
+   Single light theme on purpose (it mimics the real Powimo UI). */
+:root{
+  color-scheme: light;
+  --red:#c4001a; --red-d:#9e0015; --blue:#1689d0; --blue-l:#e6f3fb;
+  --canvas:#ececec; --card:#ffffff; --rail:#e2e2e2; --line:#d6d6d6; --line-l:#ececec;
+  --ink:#2e2e2e; --mut:#7d7d7d; --ph:#b1b1b1;
+  --ok:#3a9b22; --ok-l:#e8f6e3; --warn:#c46b00; --warn-l:#fff2df; --err:#c4001a; --err-l:#fde6e9;
+  --f-ui:"Roboto Condensed","Arial Narrow",Arial,sans-serif;
+  --f-num:"Roboto",Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--canvas);color:var(--ink);font-family:var(--f-ui);font-size:15px;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:76px 1fr;grid-template-rows:52px 1fr;min-height:calc(100% - 30px)}
+/* rail */
+.rail{grid-row:1/3;background:var(--rail);display:flex;flex-direction:column;align-items:stretch}
+.rail .logo{height:52px;display:flex;align-items:center;justify-content:center;font:700 13px var(--f-ui);letter-spacing:.06em;color:var(--red)}
+.rail button{border:0;background:transparent;padding:10px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;color:#5d5d5d;cursor:pointer;font-size:11.5px}
+.rail button svg{width:24px;height:24px}
+.rail button[aria-current="page"]{background:var(--red);color:#fff}
+.rail button:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+.rail .grow{flex:1}
+.rail .help{background:var(--blue);color:#fff}
+/* top */
+.top{display:flex;align-items:center;gap:16px;min-width:0}
+.mod{background:var(--red);color:#fff;height:52px;display:flex;align-items:center;gap:12px;padding:0 22px;font:500 17px var(--f-ui);min-width:190px}
+.search{flex:1;min-width:0;height:34px;background:#e0e0e0;border-radius:3px;display:flex;align-items:center;padding:0 12px;color:#9a9a9a}
+.top .who{display:flex;align-items:center;gap:10px;padding-right:18px;color:#666;font-size:13px;white-space:nowrap}
+.avatar{width:30px;height:30px;border-radius:50%;background:#33415c;color:#fff;font:700 11px var(--f-num);display:flex;align-items:center;justify-content:center}
+/* main */
+main{padding-block:18px 40px;padding-inline:28px;min-width:0}
+.crumb{color:var(--red);font-size:15px}.crumb span{color:var(--mut)}
+h1{font:300 30px var(--f-ui);margin:2px 0 14px;text-wrap:balance}
+h2{font:500 17px var(--f-ui);margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctx{background:var(--card);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;color:#555;margin-bottom:14px}
+.ctx b{font-weight:500;color:var(--ink)}
+.card{background:var(--card);padding:16px 18px;margin-bottom:14px}
+.grid{display:grid;gap:11px 14px;grid-template-columns:repeat(12,minmax(0,1fr));margin-bottom:11px}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f label{font-size:13px;color:var(--mut)}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c9{grid-column:span 9}.c12{grid-column:span 12}
+input,select,textarea{height:34px;border:1px solid var(--line);border-radius:2px;background:#fafafa;padding:0 9px;font-size:15px;min-width:0;width:100%}
+textarea{height:64px;padding:7px 9px;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--ph)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(22,137,208,.2);background:#fff}
+input.num{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:14.5px}
+.row-inline{display:flex;gap:8px;align-items:end}
+.btn{height:34px;border:0;border-radius:2px;padding:0 16px;background:var(--blue);color:#fff;font:500 15px var(--f-ui);cursor:pointer;white-space:nowrap}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible{outline:3px solid #0d5f91;outline-offset:2px}
+.btn.ghost{background:transparent;color:#666}
+.btn.line{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+.btn.red{background:var(--red)}
+.btn.small{height:30px;padding:0 10px;font-size:14px}
+.actions{display:flex;justify-content:flex-end;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.actions .left{margin-right:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.check{font:500 13.5px var(--f-ui);padding:4px 10px;border-radius:2px;background:#f0f0f0;color:#777}
+.check.ok{background:var(--ok-l);color:var(--ok)}.check.ko{background:var(--err-l);color:var(--err)}
+.chip{display:inline-flex;align-items:center;gap:5px;font:500 12.5px var(--f-ui);padding:2px 8px;border-radius:2px;background:#ececec;color:#555;white-space:nowrap}
+.chip.ok{background:var(--ok);color:#fff}.chip.warn{background:var(--warn-l);color:var(--warn)}.chip.err{background:var(--err-l);color:var(--err)}.chip.blue{background:var(--blue-l);color:#0b6aa4}
+.errors{background:var(--err-l);color:var(--err);padding:10px 14px;margin-bottom:10px;font-size:14.5px}
+.errors[hidden]{display:none}
+.errors ul{margin:4px 0 0 18px;padding:0}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-weight:400;font-size:13px;color:var(--mut);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line-l);vertical-align:middle}
+td.n,th.n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+td input,td select{height:32px}
+.empty td{color:#a5a5a5;font-style:italic;text-align:center}
+.lots{display:flex;flex-direction:column;gap:8px}
+.lotrow{display:grid;grid-template-columns:140px 220px auto;gap:8px;align-items:center;max-width:520px}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px}
+.tile{background:var(--card);padding:14px 16px}
+.tile b{display:block;font:300 32px var(--f-ui);color:var(--ink)}
+.tile span{color:var(--mut);font-size:14px}
+.tasks{line-height:2.1;color:#444}
+.modal-bg{position:fixed;inset:0;background:rgba(30,30,30,.4);display:flex;align-items:flex-start;justify-content:center;padding:80px 16px 16px;z-index:50}
+.modal-bg[hidden]{display:none}
+.modal{background:#fff;width:min(680px,100%);padding:20px 22px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.modal h3{font:300 24px var(--f-ui);margin:0 0 14px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ok);color:#fff;padding:11px 20px;font:500 15px var(--f-ui);box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:60;max-width:calc(100% - 32px)}
+.toast[hidden]{display:none}
+.note{color:var(--mut);font-size:13.5px}
+.reset-zone{display:flex;gap:8px;align-items:center}
+section[hidden]{display:none}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 52px 1fr}
+  .rail{grid-row:auto;flex-direction:row;overflow-x:auto}
+  .rail .grow,.rail .help,.rail .logo{display:none}
+  .rail button{flex:1;min-width:76px}
+  .mod{min-width:0}
+  .top .who span{display:none}
+  main{padding-inline:16px}
+  .c2,.c3,.c4,.c5,.c6,.c7,.c8,.c9{grid-column:span 12}
+  .lotrow{grid-template-columns:1fr 1fr;max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head><body>
+<div style="background:#33415c;color:#fff;font:400 13px 'Roboto Condensed',Arial,sans-serif;padding:6px 16px;text-align:center">Maquette de démonstration, non officielle et non affiliée à Seiitra. Les saisies restent dans ce navigateur.</div>
+<div class="app">
+  <nav class="rail" aria-label="Modules Powimo">
+    <div class="logo">POWIMO</div>
+    <button type="button" id="nav-accueil" data-screen="accueil" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11l9-8 9 8M5 9.5V21h5v-6h4v6h5V9.5"/></svg>Accueil</button>
+    <button type="button" id="nav-compta" data-screen="compta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="8" height="18"/><rect x="13" y="3" width="8" height="18"/><path d="M5 7h4M15 7h4M7 13v4M5 15h4M15 14h4M15 17h4"/></svg>Comptabilité</button>
+    <button type="button" id="nav-copro" data-screen="copro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6z"/><circle cx="16.5" cy="7" r="2.8"/><path d="M15 12.6c3.8-.6 6.8 1.6 6.8 5.4h-4.5"/></svg>Copropriétaires</button>
+    <button type="button" id="nav-controle" data-screen="controle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4h16v16H4z"/><path d="M8 12l3 3 5-6"/></svg>Contrôle</button>
+    <div class="grow"></div>
+    <button type="button" class="help" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.8-2.5 2-2.5 4M12 17h.01"/></svg>Aide</button>
+  </nav>
+
+  <header class="top">
+    <div class="mod" id="modname">Accueil</div>
+    <div class="search" aria-hidden="true">Recherche…</div>
+    <div class="who"><span>Mountain Collection Immobilier</span><div class="avatar">MCI</div></div>
+  </header>
+
+  <main>
+    <!-- ================= ACCUEIL ================= -->
+    <section id="screen-accueil">
+      <div class="crumb">Accueil</div>
+      <h1>Votre tableau de bord</h1>
+      <div class="dash">
+        <div class="tile"><b id="t-fact">0</b><span>factures saisies</span></div>
+        <div class="tile"><b id="t-four">0</b><span>fournisseurs créés</span></div>
+        <div class="tile"><b id="t-copro">0</b><span>comptes copropriétaires repris</span></div>
+        <div class="tile"><b id="t-points">0</b><span>points à valider</span></div>
+      </div>
+      <div class="card">
+        <h2>Tâches — Reprise AIME 2000 (ex-Foncia)</h2>
+        <div class="tasks">
+          <div>◯ Saisir les factures fournisseurs (module <b>Comptabilité</b>)</div>
+          <div>◯ Reprendre les soldes des comptes copropriétaires (module <b>Copropriétaires</b>)</div>
+          <div>◯ Rapprocher les totaux saisis avec la balance Foncia (module <b>Contrôle</b>)</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Démonstration</h2>
+        <p class="note" style="margin:0 0 10px">Maquette d'interface réalisée pour la démonstration. Les saisies sont conservées dans ce navigateur uniquement.</p>
+        <div class="reset-zone">
+          <button type="button" class="btn line" id="btn-reset">Réinitialiser la démo</button>
+          <button type="button" class="btn red" id="btn-reset-confirm" hidden>Confirmer : tout effacer</button>
+          <button type="button" class="btn ghost" id="btn-reset-cancel" hidden>Annuler</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= COMPTABILITE ================= -->
+    <section id="screen-compta" hidden>
+      <div class="crumb">Comptabilité <span>/ Factures fournisseurs / Nouvelle facture</span></div>
+      <h1>Saisie d'une facture fournisseur</h1>
+      <div class="ctx"><span>Immeuble <b>AIME 2000</b></span><span>Réf. Foncia <b>501465839</b></span><span>Journal <b>AC – Achats</b></span><span class="chip warn">Reprise Foncia</span></div>
+
+      <form class="card" id="form-facture" novalidate>
+        <h2>Facture</h2>
+        <div class="errors" id="facture-errors" role="alert" hidden></div>
+        <div class="grid">
+          <div class="f c6"><label for="facture-fournisseur">Fournisseur</label>
+            <div class="row-inline"><select id="facture-fournisseur" name="fournisseur"><option value="">— Choisir un fournisseur —</option></select>
+            <button type="button" class="btn line small" id="btn-nouveau-fournisseur">+ Nouveau fournisseur</button></div></div>
+          <div class="f c3"><label for="facture-numero">N° de facture</label><input id="facture-numero" name="numero" autocomplete="off"></div>
+          <div class="f c3"><label for="facture-exercice">Exercice</label>
+            <select id="facture-exercice" name="exercice"><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option><option>2022-2023</option></select></div>
+          <div class="f c3"><label for="facture-date">Date de facture</label><input id="facture-date" name="date" placeholder="JJ/MM/AAAA" autocomplete="off"></div>
+          <div class="f c3"><label for="facture-echeance">Échéance</label><input id="facture-echeance" name="echeance" placeholder="JJ/MM/AAAA" autocomplete="off"></div>
+          <div class="f c6"><label for="facture-reference">Référence (ordre de service, devis, contrat)</label><input id="facture-reference" name="reference" autocomplete="off"></div>
+          <div class="f c12"><label for="facture-libelle">Libellé</label><input id="facture-libelle" name="libelle" autocomplete="off"></div>
+          <div class="f c3"><label for="facture-ht">Montant HT (€)</label><input id="facture-ht" class="num" name="ht" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c3"><label for="facture-taux">Taux de TVA</label>
+            <select id="facture-taux" name="taux"><option value="">—</option><option value="0">0 % (non applicable)</option><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option><option value="multi">Plusieurs taux</option></select></div>
+          <div class="f c3"><label for="facture-tva">Montant TVA (€)</label><input id="facture-tva" class="num" name="tva" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c3"><label for="facture-ttc">Montant TTC (€)</label><input id="facture-ttc" class="num" name="ttc" inputmode="decimal" placeholder="0,00"></div>
+        </div>
+
+        <h2 style="margin-top:16px">Ventilation des charges <span class="check" id="check-ventil">Ventilé : 0,00 €</span></h2>
+        <div class="tw"><table id="table-ventilation">
+          <thead><tr><th style="width:34%">Compte de charge</th><th style="width:26%">Clé de répartition</th><th style="width:22%">Copropriétaire (si imputé)</th><th class="n">Montant TTC</th><th></th></tr></thead>
+          <tbody id="ventil-body"></tbody>
+        </table></div>
+        <div style="margin:8px 0 14px"><button type="button" class="btn line small" id="btn-ajouter-ligne">+ Ajouter une ligne</button></div>
+
+        <div class="grid">
+          <div class="f c8"><label for="facture-points">Points à valider par le gestionnaire</label><textarea id="facture-points" name="points" placeholder="Anomalies, hypothèses d'imputation, doublons…"></textarea></div>
+          <div class="f c4"><label for="facture-source">Pièce source (fichier, page)</label><input id="facture-source" name="source" autocomplete="off"></div>
+        </div>
+        <div class="actions">
+          <div class="left"><span class="check" id="check-totaux">HT + TVA = TTC : à vérifier</span></div>
+          <button type="button" class="btn ghost" id="btn-effacer-facture">Effacer le formulaire</button>
+          <button type="submit" class="btn" id="btn-enregistrer-facture">Enregistrer la facture</button>
+        </div>
+      </form>
+
+      <div class="card">
+        <h2>Factures saisies — AIME 2000 <span class="chip blue" id="count-factures">0</span></h2>
+        <div class="tw"><table>
+          <thead><tr><th>Fournisseur</th><th>N°</th><th>Date</th><th>Comptes</th><th class="n">HT</th><th class="n">TTC</th><th>Statut</th><th></th></tr></thead>
+          <tbody id="liste-factures"><tr class="empty"><td colspan="8">Aucune facture saisie</td></tr></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= COPROPRIETAIRES ================= -->
+    <section id="screen-copro" hidden>
+      <div class="crumb">Copropriétaires <span>/ Reprise de dossier / Comptes copropriétaires</span></div>
+      <h1>Reprise des comptes copropriétaires</h1>
+      <div class="ctx"><span>Immeuble <b>AIME 2000</b></span><span>Ancien syndic <b>Foncia Cimes de Savoie</b></span><span class="chip blue" id="count-copros">0 / 835 comptes repris</span></div>
+
+      <form class="card" id="form-copro" novalidate>
+        <h2>Nouveau compte copropriétaire</h2>
+        <div class="errors" id="copro-errors" role="alert" hidden></div>
+        <div class="grid">
+          <div class="f c3"><label for="copro-type">Type</label><select id="copro-type"><option value="physique">Personne physique</option><option value="morale">Personne morale</option></select></div>
+          <div class="f c2"><label for="copro-civilite">Civilité</label><select id="copro-civilite"><option value="">—</option><option>M.</option><option>Mme</option><option>M. ou Mme</option><option>M. et Mme</option></select></div>
+          <div class="f c7"><label for="copro-nom">Nom / Raison sociale</label><input id="copro-nom" autocomplete="off"></div>
+          <div class="f c6"><label for="copro-adresse1">Adresse</label><input id="copro-adresse1" autocomplete="off"></div>
+          <div class="f c6"><label for="copro-adresse2">Complément d'adresse</label><input id="copro-adresse2" autocomplete="off"></div>
+          <div class="f c2"><label for="copro-cp">Code postal</label><input id="copro-cp" autocomplete="off"></div>
+          <div class="f c4"><label for="copro-ville">Ville</label><input id="copro-ville" autocomplete="off"></div>
+          <div class="f c4"><label for="copro-email">E-mail</label><input id="copro-email" autocomplete="off"></div>
+          <div class="f c2"><label for="copro-ref">N° client Foncia</label><input id="copro-ref" autocomplete="off"></div>
+        </div>
+        <div class="f" style="margin-bottom:14px"><label>Lots</label>
+          <div class="lots" id="lots-body"></div>
+          <div style="margin-top:8px"><button type="button" class="btn line small" id="btn-ajouter-lot">+ Ajouter un lot</button></div>
+        </div>
+        <h2>Soldes repris de l'ancien syndic</h2>
+        <div class="grid">
+          <div class="f c3"><label for="copro-date-solde">Solde arrêté au</label><input id="copro-date-solde" value="19/11/2025" autocomplete="off"></div>
+          <div class="f c3"><label for="copro-sens">Sens du solde</label><select id="copro-sens"><option value="">—</option><option value="debiteur">Débiteur (doit au syndicat)</option><option value="crediteur">Créditeur (en sa faveur)</option><option value="solde">Soldé (0,00 €)</option></select></div>
+          <div class="f c2"><label for="copro-solde">Montant du solde (€)</label><input id="copro-solde" class="num" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c2"><label for="copro-avance">Avance de trésorerie (€)</label><input id="copro-avance" class="num" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c2"><label for="copro-fonds">Fonds travaux (€)</label><input id="copro-fonds" class="num" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c8"><label for="copro-points">Points à valider par le gestionnaire</label><textarea id="copro-points" placeholder="Lot sans nature, solde débiteur élevé, coordonnées incomplètes…"></textarea></div>
+          <div class="f c4"><label for="copro-source">Pièce source (fichier)</label><input id="copro-source" autocomplete="off"></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="btn-effacer-copro">Effacer le formulaire</button>
+          <button type="submit" class="btn" id="btn-enregistrer-copro">Enregistrer le compte</button>
+        </div>
+      </form>
+
+      <div class="card">
+        <h2>Comptes repris</h2>
+        <div class="tw"><table>
+          <thead><tr><th>N° Foncia</th><th>Copropriétaire</th><th>Lots</th><th class="n">Solde repris</th><th class="n">Avance trés.</th><th class="n">Fonds trav.</th><th>Contrôle</th><th></th></tr></thead>
+          <tbody id="liste-copros"><tr class="empty"><td colspan="8">Aucun compte repris</td></tr></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= CONTROLE ================= -->
+    <section id="screen-controle" hidden>
+      <div class="crumb">Contrôle <span>/ Reprise de dossier / Rapprochement</span></div>
+      <h1>Rapprochement avec la balance Foncia</h1>
+      <div class="card">
+        <h2>Fournisseurs : total saisi et total comptabilisé par Foncia</h2>
+        <p class="note" style="margin:0 0 10px">Indiquez pour chaque fournisseur le cumul crédit de son compte dans la balance Foncia de l'exercice. L'écart se calcule automatiquement.</p>
+        <div class="tw"><table>
+          <thead><tr><th>Fournisseur</th><th class="n">Factures</th><th class="n">Total TTC saisi</th><th class="n">Total balance Foncia</th><th class="n">Écart</th><th>Statut</th></tr></thead>
+          <tbody id="liste-rappro"><tr class="empty"><td colspan="6">Aucune facture saisie</td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <h2>Points à valider <span class="chip warn" id="count-points">0</span></h2>
+        <div class="tw"><table>
+          <thead><tr><th>Origine</th><th>Pièce</th><th>Point</th></tr></thead>
+          <tbody id="liste-points"><tr class="empty"><td colspan="3">Aucun point signalé</td></tr></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modale fournisseur -->
+<div class="modal-bg" id="modal-fournisseur" hidden>
+  <form class="modal" id="form-fournisseur" novalidate role="dialog" aria-labelledby="modal-titre">
+    <h3 id="modal-titre">Nouveau fournisseur</h3>
+    <div class="errors" id="fournisseur-errors" role="alert" hidden></div>
+    <div class="grid">
+      <div class="f c8"><label for="fournisseur-raison">Raison sociale</label><input id="fournisseur-raison" autocomplete="off"></div>
+      <div class="f c4"><label for="fournisseur-siret">SIRET</label><input id="fournisseur-siret" autocomplete="off"></div>
+      <div class="f c6"><label for="fournisseur-adresse">Adresse</label><input id="fournisseur-adresse" autocomplete="off"></div>
+      <div class="f c2"><label for="fournisseur-cp">Code postal</label><input id="fournisseur-cp" autocomplete="off"></div>
+      <div class="f c4"><label for="fournisseur-ville">Ville</label><input id="fournisseur-ville" autocomplete="off"></div>
+      <div class="f c8"><label for="fournisseur-iban">IBAN</label><input id="fournisseur-iban" autocomplete="off"></div>
+      <div class="f c4"><label for="fournisseur-compte">Compte fournisseur</label><input id="fournisseur-compte" placeholder="401…" autocomplete="off"></div>
+    </div>
+    <div class="actions"><button type="button" class="btn ghost" id="btn-annuler-fournisseur">Annuler</button><button type="submit" class="btn" id="btn-creer-fournisseur">Créer le fournisseur</button></div>
+  </form>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+const COMPTES=[
+ ['6010','Eau'],['6020','Électricité'],['6030','Chauffage, énergie, combustibles'],['6040','Produits d\'entretien, petit équipement'],['6060','Fournitures'],
+ ['6140','Contrats de maintenance'],['6150','Entretien et petites réparations'],['6160','Primes d\'assurances'],
+ ['6211','Rémunération du syndic'],['6212','Débours'],['6213','Frais postaux'],['6223','Autres honoraires'],['6230','Rémunérations de tiers intervenants'],['6240','Frais du conseil syndical'],
+ ['6340','Autres impôts et taxes'],['6710','Travaux décidés par l\'AG'],['4500','Imputation au compte d\'un copropriétaire (art. 10-1)']];
+const CLES=['001 · Charges communes générales','002 · Ascenseurs','003 · Chauffage','004 · Galerie commerciale','005 · Eau','006 · Bâtiment Le Paquebot'];
+const NATURES=['Appartement','Cave','Local commercial','Parking','Casier à skis','Nature à compléter'];
+const KEY='powimo-demo-aime2000-v1';
+const $=id=>document.getElementById(id);
+let S={fournisseurs:[],factures:[],copros:[],balance:{}};
+try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+/* numbers */
+function parseNum(v){ if(v==null) return NaN; let s=String(v).replace(/[\s  €]/g,''); if(!s) return NaN;
+  const lc=s.lastIndexOf(','), ld=s.lastIndexOf('.');
+  if(lc>-1&&ld>-1){ s = lc>ld ? s.replace(/\./g,'').replace(',','.') : s.replace(/,/g,''); }
+  else if(lc>-1){ s=s.replace(',','.'); }
+  const n=Number(s); return isFinite(n)?Math.round(n*100)/100:NaN; }
+const fmt=n=>isNaN(n)?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dateOk=s=>/^\d{2}\/\d{2}\/\d{4}$/.test(String(s).trim());
+
+/* navigation */
+const TITLES={accueil:'Accueil',compta:'Comptabilité',copro:'Copropriétaires',controle:'Contrôle'};
+function go(screen){ document.querySelectorAll('main > section').forEach(s=>s.hidden = s.id!=='screen-'+screen);
+  document.querySelectorAll('.rail button[data-screen]').forEach(b=>{ if(b.dataset.screen===screen) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  $('modname').textContent=TITLES[screen]; try{sessionStorage.setItem(KEY+'-screen',screen);}catch(e){} renderAll(); window.scrollTo(0,0); }
+document.querySelectorAll('.rail button[data-screen]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.screen)));
+
+let toastT; function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
+function showErrors(id, list){ const e=$(id); if(!list.length){ e.hidden=true; e.innerHTML=''; return; } e.innerHTML='<b>Impossible d\'enregistrer :</b><ul>'+list.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'; e.hidden=false; }
+
+/* ---------- fournisseurs ---------- */
+function renderFournisseurSelect(selected){ const sel=$('facture-fournisseur'); const cur=selected ?? sel.value;
+  sel.innerHTML='<option value="">— Choisir un fournisseur —</option>'+S.fournisseurs.map(f=>`<option value="${esc(f.id)}">${esc(f.raison)} (${esc(f.compte)})</option>`).join(''); sel.value=cur||''; }
+function openFournisseur(){ ['raison','siret','adresse','cp','ville','iban','compte'].forEach(k=>$('fournisseur-'+k).value=''); showErrors('fournisseur-errors',[]); $('modal-fournisseur').hidden=false; $('fournisseur-raison').focus(); }
+$('btn-nouveau-fournisseur').addEventListener('click',openFournisseur);
+$('btn-annuler-fournisseur').addEventListener('click',()=>$('modal-fournisseur').hidden=true);
+$('fournisseur-raison').addEventListener('blur',()=>{ const c=$('fournisseur-compte'); if(!c.value){ const w=$('fournisseur-raison').value.replace(/^(SAS|SARL|SA|SCI|SELARL|EURL)\s+/i,'').replace(/[^A-Za-zÀ-ÿ]/g,'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,''); if(w) c.value='401'+w.slice(0,3); } });
+$('form-fournisseur').addEventListener('submit',ev=>{ ev.preventDefault();
+  const f={id:'F'+Date.now(),raison:$('fournisseur-raison').value.trim(),siret:$('fournisseur-siret').value.trim(),adresse:$('fournisseur-adresse').value.trim(),cp:$('fournisseur-cp').value.trim(),ville:$('fournisseur-ville').value.trim(),iban:$('fournisseur-iban').value.trim(),compte:$('fournisseur-compte').value.trim()};
+  const errs=[]; if(!f.raison) errs.push('Raison sociale manquante.'); if(!f.compte) errs.push('Compte fournisseur manquant.');
+  const siretDigits=f.siret.replace(/\s/g,''); if(f.siret && !/^\d{14}$/.test(siretDigits)) errs.push('Le SIRET doit comporter 14 chiffres.');
+  if(S.fournisseurs.some(x=>x.raison.toLowerCase()===f.raison.toLowerCase())) errs.push('Ce fournisseur existe déjà : sélectionnez-le dans la liste.');
+  showErrors('fournisseur-errors',errs); if(errs.length) return;
+  S.fournisseurs.push(f); save(); renderFournisseurSelect(f.id); $('modal-fournisseur').hidden=true; toast('Fournisseur '+f.raison+' créé'); renderAll(); });
+
+/* ---------- ventilation ---------- */
+function ventilRow(v={}){ const tr=document.createElement('tr'); const i=$('ventil-body').children.length+1;
+  tr.innerHTML=`<td><select id="ventil-compte-${i}" aria-label="Compte de charge ligne ${i}"><option value="">— Compte —</option>${COMPTES.map(c=>`<option value="${c[0]}">${c[0]} — ${esc(c[1])}</option>`).join('')}</select></td>
+   <td><select id="ventil-cle-${i}" aria-label="Clé de répartition ligne ${i}"><option value="">— Clé —</option>${CLES.map(c=>`<option>${esc(c)}</option>`).join('')}</select></td>
+   <td><input id="ventil-copro-${i}" aria-label="Copropriétaire imputé ligne ${i}" placeholder="—" autocomplete="off"></td>
+   <td><input id="ventil-montant-${i}" class="num" aria-label="Montant TTC ligne ${i}" placeholder="0,00" inputmode="decimal"></td>
+   <td><button type="button" class="btn ghost small" aria-label="Supprimer la ligne ${i}">✕</button></td>`;
+  tr.querySelector('button').addEventListener('click',()=>{ tr.remove(); checks(); });
+  tr.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',checks));
+  $('ventil-body').appendChild(tr); if(v.compte) tr.querySelector('select').value=v.compte; return tr; }
+$('btn-ajouter-ligne').addEventListener('click',()=>{ ventilRow(); checks(); });
+function readVentil(){ return [...$('ventil-body').children].map(tr=>{ const [c,k]=tr.querySelectorAll('select'); const [p,m]=tr.querySelectorAll('input'); return {compte:c.value,cle:k.value,copro:p.value.trim(),montant:parseNum(m.value)}; }); }
+function checks(){ const ht=parseNum($('facture-ht').value),tva=parseNum($('facture-tva').value),ttc=parseNum($('facture-ttc').value);
+  const ct=$('check-totaux'); if([ht,tva,ttc].some(isNaN)){ ct.className='check'; ct.textContent='HT + TVA = TTC : à vérifier'; }
+  else { const d=Math.round((ht+tva-ttc)*100)/100; if(Math.abs(d)<0.01){ ct.className='check ok'; ct.textContent='HT + TVA = TTC ✓'; } else { ct.className='check ko'; ct.textContent='Écart HT + TVA − TTC : '+fmt(d); } }
+  const tot=readVentil().reduce((a,v)=>a+(isNaN(v.montant)?0:v.montant),0); const cv=$('check-ventil');
+  cv.textContent='Ventilé : '+fmt(Math.round(tot*100)/100)+(isNaN(ttc)?'':' / '+fmt(ttc));
+  cv.className='check'+(isNaN(ttc)?'':(Math.abs(tot-ttc)<0.01?' ok':' ko')); }
+['facture-ht','facture-tva','facture-ttc'].forEach(id=>$(id).addEventListener('input',checks));
+function resetFacture(){ $('form-facture').reset(); $('ventil-body').innerHTML=''; ventilRow(); showErrors('facture-errors',[]); checks(); }
+$('btn-effacer-facture').addEventListener('click',resetFacture);
+$('form-facture').addEventListener('submit',ev=>{ ev.preventDefault();
+  const four=S.fournisseurs.find(f=>f.id===$('facture-fournisseur').value);
+  const F={id:'A'+Date.now(),fournisseur:four?four.raison:'',fournisseurId:four?four.id:'',numero:$('facture-numero').value.trim(),exercice:$('facture-exercice').value,date:$('facture-date').value.trim(),echeance:$('facture-echeance').value.trim(),reference:$('facture-reference').value.trim(),libelle:$('facture-libelle').value.trim(),
+    ht:parseNum($('facture-ht').value),taux:$('facture-taux').value,tva:parseNum($('facture-tva').value),ttc:parseNum($('facture-ttc').value),ventil:readVentil().filter(v=>v.compte||!isNaN(v.montant)),points:$('facture-points').value.trim(),source:$('facture-source').value.trim()};
+  const e=[]; if(!four) e.push('Choisissez un fournisseur (ou créez-le).'); if(!F.numero) e.push('N° de facture manquant.'); if(!dateOk(F.date)) e.push('Date de facture au format JJ/MM/AAAA.');
+  if(F.echeance && !dateOk(F.echeance)) e.push('Échéance au format JJ/MM/AAAA.');
+  if(isNaN(F.ttc)) e.push('Montant TTC manquant.'); if(isNaN(F.ht)) e.push('Montant HT manquant.');
+  if(!isNaN(F.ht)&&!isNaN(F.ttc)&&Math.abs((F.ht+(isNaN(F.tva)?0:F.tva))-F.ttc)>=0.01) e.push('HT + TVA ne correspond pas au TTC.');
+  if(!F.ventil.length) e.push('Ajoutez au moins une ligne de ventilation.');
+  F.ventil.forEach((v,i)=>{ if(!v.compte) e.push(`Ligne ${i+1} : compte de charge manquant.`); if(isNaN(v.montant)) e.push(`Ligne ${i+1} : montant manquant.`); if(v.compte==='4500'&&!v.copro) e.push(`Ligne ${i+1} : indiquez le copropriétaire imputé.`); });
+  const tv=F.ventil.reduce((a,v)=>a+(isNaN(v.montant)?0:v.montant),0); if(!isNaN(F.ttc)&&Math.abs(tv-F.ttc)>=0.01) e.push('Le total ventilé ('+fmt(tv)+') ne correspond pas au TTC.');
+  if(four && S.factures.some(x=>x.fournisseurId===four.id && x.numero.toLowerCase()===F.numero.toLowerCase())) e.push('Doublon : la facture '+F.numero+' de '+four.raison+' est déjà saisie.');
+  showErrors('facture-errors',e); if(e.length){ $('facture-errors').scrollIntoView({block:'center'}); return; }
+  S.factures.push(F); save(); toast('Facture '+F.numero+' enregistrée · journal AC'); resetFacture(); renderAll(); });
+
+/* ---------- copros ---------- */
+function lotRow(){ const d=document.createElement('div'); d.className='lotrow'; const i=$('lots-body').children.length+1;
+  d.innerHTML=`<input id="lot-numero-${i}" aria-label="N° du lot ${i}" placeholder="N° de lot" autocomplete="off">
+   <select id="lot-nature-${i}" aria-label="Nature du lot ${i}"><option value="">— Nature —</option>${NATURES.map(n=>`<option>${n}</option>`).join('')}</select>
+   <button type="button" class="btn ghost small" aria-label="Supprimer le lot ${i}">✕</button>`;
+  d.querySelector('button').addEventListener('click',()=>d.remove()); $('lots-body').appendChild(d); return d; }
+$('btn-ajouter-lot').addEventListener('click',()=>{ lotRow().querySelector('input').focus(); });
+function resetCopro(){ $('form-copro').reset(); $('copro-date-solde').value='19/11/2025'; $('lots-body').innerHTML=''; lotRow(); showErrors('copro-errors',[]); }
+$('btn-effacer-copro').addEventListener('click',resetCopro);
+$('form-copro').addEventListener('submit',ev=>{ ev.preventDefault();
+  const lots=[...$('lots-body').children].map(r=>({numero:r.querySelector('input').value.trim(),nature:r.querySelector('select').value})).filter(l=>l.numero);
+  const C={id:'C'+Date.now(),type:$('copro-type').value,civilite:$('copro-civilite').value,nom:$('copro-nom').value.trim(),adresse1:$('copro-adresse1').value.trim(),adresse2:$('copro-adresse2').value.trim(),cp:$('copro-cp').value.trim(),ville:$('copro-ville').value.trim(),email:$('copro-email').value.trim(),ref:$('copro-ref').value.trim(),lots,
+    dateSolde:$('copro-date-solde').value.trim(),sens:$('copro-sens').value,solde:parseNum($('copro-solde').value),avance:parseNum($('copro-avance').value),fonds:parseNum($('copro-fonds').value),points:$('copro-points').value.trim(),source:$('copro-source').value.trim()};
+  const e=[]; if(!C.nom) e.push('Nom ou raison sociale manquant.'); if(!C.ref) e.push('N° client Foncia manquant.'); if(!lots.length) e.push('Ajoutez au moins un lot.');
+  lots.forEach(l=>{ if(!l.nature) e.push('Lot '+l.numero+' : choisissez une nature (ou « Nature à compléter »).'); });
+  if(!C.sens) e.push('Indiquez le sens du solde.'); if(C.sens!=='solde' && isNaN(C.solde)) e.push('Montant du solde manquant.');
+  if(C.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(C.email)) e.push('E-mail invalide.');
+  if(C.ref && S.copros.some(x=>x.ref===C.ref)) e.push('Doublon : le compte Foncia '+C.ref+' est déjà repris.');
+  showErrors('copro-errors',e); if(e.length){ $('copro-errors').scrollIntoView({block:'center'}); return; }
+  if(C.sens==='solde') C.solde=0;
+  S.copros.push(C); save(); toast('Compte '+C.nom+' enregistré'); resetCopro(); renderAll(); });
+
+/* ---------- rendering ---------- */
+function del(kind,id){ S[kind]=S[kind].filter(x=>x.id!==id); save(); renderAll(); }
+function renderAll(){
+  $('t-fact').textContent=S.factures.length; $('t-four').textContent=S.fournisseurs.length; $('t-copro').textContent=S.copros.length;
+  const pts=[...S.factures.filter(f=>f.points).map(f=>({o:'Facture '+f.numero+' · '+f.fournisseur,s:f.source,p:f.points})),...S.copros.filter(c=>c.points).map(c=>({o:'Compte '+c.nom,s:c.source,p:c.points}))];
+  $('t-points').textContent=pts.length; $('count-points').textContent=pts.length;
+  $('count-factures').textContent=S.factures.length; $('count-copros').textContent=S.copros.length+' / 835 comptes repris';
+  const lf=$('liste-factures');
+  lf.innerHTML = S.factures.length ? S.factures.map(f=>`<tr><td>${esc(f.fournisseur)}</td><td>${esc(f.numero)}</td><td>${esc(f.date)}</td><td>${esc(f.ventil.map(v=>v.compte+(v.copro?' ('+v.copro+')':'')).join(', '))}</td><td class="n">${fmt(f.ht)}</td><td class="n">${fmt(f.ttc)}</td><td>${f.points?'<span class="chip warn">À valider</span>':'<span class="chip ok">OK</span>'}</td><td><button type="button" class="btn ghost small" data-del="factures" data-id="${f.id}" aria-label="Supprimer la facture ${esc(f.numero)}">✕</button></td></tr>`).join('') : '<tr class="empty"><td colspan="8">Aucune facture saisie</td></tr>';
+  const lc=$('liste-copros');
+  lc.innerHTML = S.copros.length ? S.copros.map(c=>{ const todo=c.lots.some(l=>l.nature==='Nature à compléter'); const big=c.sens==='debiteur'&&c.solde>1000;
+    const ctl= big?'<span class="chip err">⚑ Impayé à suivre</span>':todo?'<span class="chip warn">Lot à compléter</span>':c.points?'<span class="chip warn">À valider</span>':'<span class="chip ok">OK</span>';
+    const s=c.sens==='debiteur'?'<span style="color:var(--err)">Déb. '+fmt(c.solde)+'</span>':c.sens==='crediteur'?'<span style="color:var(--ok)">Créd. '+fmt(c.solde)+'</span>':'Soldé';
+    return `<tr><td>${esc(c.ref)}</td><td>${esc((c.civilite?c.civilite+' ':'')+c.nom)}</td><td>${esc(c.lots.map(l=>l.numero).join(', '))}</td><td class="n">${s}</td><td class="n">${fmt(c.avance)}</td><td class="n">${fmt(c.fonds)}</td><td>${ctl}</td><td><button type="button" class="btn ghost small" data-del="copros" data-id="${c.id}" aria-label="Supprimer le compte ${esc(c.nom)}">✕</button></td></tr>`; }).join('') : '<tr class="empty"><td colspan="8">Aucun compte repris</td></tr>';
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>del(b.dataset.del,b.dataset.id));
+  // rapprochement
+  const by={}; S.factures.forEach(f=>{ (by[f.fournisseur]=by[f.fournisseur]||{n:0,t:0}); by[f.fournisseur].n++; by[f.fournisseur].t+=f.ttc; });
+  const names=Object.keys(by); const lr=$('liste-rappro');
+  lr.innerHTML = names.length ? names.map((n,i)=>{ const b=parseNum(S.balance[n]); const t=Math.round(by[n].t*100)/100; const d=isNaN(b)?NaN:Math.round((t-b)*100)/100;
+    const st=isNaN(b)?'<span class="chip">À renseigner</span>':Math.abs(d)<0.01?'<span class="chip ok">Concordant</span>':'<span class="chip err">Écart à analyser</span>';
+    return `<tr><td>${esc(n)}</td><td class="n">${by[n].n}</td><td class="n">${fmt(t)}</td><td class="n"><input id="balance-${i}" class="num" data-four="${esc(n)}" aria-label="Total balance Foncia pour ${esc(n)}" value="${esc(S.balance[n]||'')}" placeholder="0,00" style="max-width:150px;margin-left:auto;display:block"></td><td class="n">${isNaN(d)?'—':fmt(d)}</td><td>${st}</td></tr>`; }).join('') : '<tr class="empty"><td colspan="6">Aucune facture saisie</td></tr>';
+  lr.querySelectorAll('input[data-four]').forEach(inp=>inp.addEventListener('change',()=>{ S.balance[inp.dataset.four]=inp.value; save(); renderAll(); }));
+  $('liste-points').innerHTML = pts.length ? pts.map(p=>`<tr><td>${esc(p.o)}</td><td>${esc(p.s||'—')}</td><td style="white-space:normal">${esc(p.p)}</td></tr>`).join('') : '<tr class="empty"><td colspan="3">Aucun point signalé</td></tr>';
+}
+/* reset */
+$('btn-reset').addEventListener('click',()=>{ $('btn-reset').hidden=true; $('btn-reset-confirm').hidden=false; $('btn-reset-cancel').hidden=false; });
+$('btn-reset-cancel').addEventListener('click',()=>{ $('btn-reset').hidden=false; $('btn-reset-confirm').hidden=true; $('btn-reset-cancel').hidden=true; });
+$('btn-reset-confirm').addEventListener('click',()=>{ S={fournisseurs:[],factures:[],copros:[],balance:{}}; save(); renderFournisseurSelect(''); resetFacture(); resetCopro(); $('btn-reset-cancel').click(); renderAll(); toast('Démo réinitialisée'); });
+
+renderFournisseurSelect(''); resetFacture(); resetCopro(); renderAll();
+let start='accueil'; try{ start=sessionStorage.getItem(KEY+'-screen')||'accueil'; }catch(e){} go(start);
+})();
+</script>
+
+</body></html>
