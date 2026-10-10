@@ -330,7 +330,8 @@ const TITLES={accueil:'Accueil',compta:'Comptabilité',copro:'Copropriétaires',
 function go(screen){ document.querySelectorAll('main > section').forEach(s=>s.hidden = s.id!=='screen-'+screen);
   document.querySelectorAll('.rail button[data-screen]').forEach(b=>{ if(b.dataset.screen===screen) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   $('modname').textContent=TITLES[screen]; try{sessionStorage.setItem(KEY+'-screen',screen);}catch(e){} renderAll(); window.scrollTo(0,0); }
-document.querySelectorAll('.rail button[data-screen]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.screen)));
+document.querySelectorAll('.rail button[data-screen]').forEach(b=>b.addEventListener('click',()=>{ if(location.hash==='#'+b.dataset.screen) go(b.dataset.screen); else location.hash=b.dataset.screen; }));
+window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(TITLES[h]) go(h); });
 
 let toastT; function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
 function showErrors(id, list){ const e=$(id); if(!list.length){ e.hidden=true; e.innerHTML=''; return; } e.innerHTML='<b>Impossible d\'enregistrer :</b><ul>'+list.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'; e.hidden=false; }
@@ -438,7 +439,7 @@ $('btn-reset-cancel').addEventListener('click',()=>{ $('btn-reset').hidden=false
 $('btn-reset-confirm').addEventListener('click',()=>{ S={fournisseurs:[],factures:[],copros:[],balance:{}}; save(); renderFournisseurSelect(''); resetFacture(); resetCopro(); $('btn-reset-cancel').click(); renderAll(); toast('Démo réinitialisée'); });
 
 renderFournisseurSelect(''); resetFacture(); resetCopro(); renderAll();
-let start='accueil'; try{ start=sessionStorage.getItem(KEY+'-screen')||'accueil'; }catch(e){} go(start);
+let start='accueil'; try{ start=sessionStorage.getItem(KEY+'-screen')||'accueil'; }catch(e){} const h0=location.hash.slice(1); if(TITLES[h0]) start=h0; go(start);
 })();
 </script>
 
