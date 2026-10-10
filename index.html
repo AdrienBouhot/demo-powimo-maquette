@@ -165,20 +165,20 @@ section[hidden]{display:none}
         <div class="errors" id="facture-errors" role="alert" hidden></div>
         <div class="grid">
           <div class="f c6"><label for="facture-fournisseur">Fournisseur</label>
-            <div class="row-inline"><select id="facture-fournisseur" name="fournisseur"><option value="">— Choisir un fournisseur —</option></select>
+            <div class="row-inline"><select id="facture-fournisseur" aria-label="Fournisseur" name="fournisseur"><option value="">— Choisir un fournisseur —</option></select>
             <button type="button" class="btn line small" id="btn-nouveau-fournisseur">+ Nouveau fournisseur</button></div></div>
           <div class="f c3"><label for="facture-numero">N° de facture</label><input id="facture-numero" name="numero" autocomplete="off"></div>
           <div class="f c3"><label for="facture-exercice">Exercice</label>
-            <select id="facture-exercice" name="exercice"><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option><option>2022-2023</option></select></div>
-          <div class="f c3"><label for="facture-date">Date de facture</label><input id="facture-date" name="date" placeholder="JJ/MM/AAAA" autocomplete="off"></div>
-          <div class="f c3"><label for="facture-echeance">Échéance</label><input id="facture-echeance" name="echeance" placeholder="JJ/MM/AAAA" autocomplete="off"></div>
+            <select id="facture-exercice" aria-label="Exercice" name="exercice"><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option><option>2022-2023</option></select></div>
+          <div class="f c3"><label for="facture-date">Date de facture</label><input id="facture-date" aria-label="Date de facture" name="date" placeholder="JJ/MM/AAAA" autocomplete="off"></div>
+          <div class="f c3"><label for="facture-echeance">Échéance</label><input id="facture-echeance" aria-label="Échéance" name="echeance" placeholder="JJ/MM/AAAA" autocomplete="off"></div>
           <div class="f c6"><label for="facture-reference">Référence (ordre de service, devis, contrat)</label><input id="facture-reference" name="reference" autocomplete="off"></div>
           <div class="f c12"><label for="facture-libelle">Libellé</label><input id="facture-libelle" name="libelle" autocomplete="off"></div>
-          <div class="f c3"><label for="facture-ht">Montant HT (€)</label><input id="facture-ht" class="num" name="ht" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c3"><label for="facture-ht">Montant HT (€)</label><input id="facture-ht" aria-label="Montant HT" class="num" name="ht" inputmode="decimal" placeholder="0,00"></div>
           <div class="f c3"><label for="facture-taux">Taux de TVA</label>
-            <select id="facture-taux" name="taux"><option value="">—</option><option value="0">0 % (non applicable)</option><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option><option value="multi">Plusieurs taux</option></select></div>
-          <div class="f c3"><label for="facture-tva">Montant TVA (€)</label><input id="facture-tva" class="num" name="tva" inputmode="decimal" placeholder="0,00"></div>
-          <div class="f c3"><label for="facture-ttc">Montant TTC (€)</label><input id="facture-ttc" class="num" name="ttc" inputmode="decimal" placeholder="0,00"></div>
+            <select id="facture-taux" aria-label="Taux de TVA" name="taux"><option value="">—</option><option value="0">0 % (non applicable)</option><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option><option value="multi">Plusieurs taux</option></select></div>
+          <div class="f c3"><label for="facture-tva">Montant TVA (€)</label><input id="facture-tva" aria-label="Montant TVA" class="num" name="tva" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c3"><label for="facture-ttc">Montant TTC (€)</label><input id="facture-ttc" aria-label="Montant TTC" class="num" name="ttc" inputmode="decimal" placeholder="0,00"></div>
         </div>
 
         <h2 style="margin-top:16px">Ventilation des charges <span class="check" id="check-ventil">Ventilé : 0,00 €</span></h2>
@@ -189,7 +189,7 @@ section[hidden]{display:none}
         <div style="margin:8px 0 14px"><button type="button" class="btn line small" id="btn-ajouter-ligne">+ Ajouter une ligne</button></div>
 
         <div class="grid">
-          <div class="f c8"><label for="facture-points">Points à valider par le gestionnaire</label><textarea id="facture-points" name="points" placeholder="Anomalies, hypothèses d'imputation, doublons…"></textarea></div>
+          <div class="f c8"><label for="facture-points">Points à valider par le gestionnaire</label><textarea id="facture-points" aria-label="Points à valider (facture)" name="points" placeholder="Anomalies, hypothèses d'imputation, doublons…"></textarea></div>
           <div class="f c4"><label for="facture-source">Pièce source (fichier, page)</label><input id="facture-source" name="source" autocomplete="off"></div>
         </div>
         <div class="actions">
@@ -218,8 +218,8 @@ section[hidden]{display:none}
         <h2>Nouveau compte copropriétaire</h2>
         <div class="errors" id="copro-errors" role="alert" hidden></div>
         <div class="grid">
-          <div class="f c3"><label for="copro-type">Type</label><select id="copro-type"><option value="physique">Personne physique</option><option value="morale">Personne morale</option></select></div>
-          <div class="f c2"><label for="copro-civilite">Civilité</label><select id="copro-civilite"><option value="">—</option><option>M.</option><option>Mme</option><option>M. ou Mme</option><option>M. et Mme</option></select></div>
+          <div class="f c3"><label for="copro-type">Type</label><select id="copro-type" aria-label="Type de copropriétaire"><option value="physique">Personne physique</option><option value="morale">Personne morale</option></select></div>
+          <div class="f c2"><label for="copro-civilite">Civilité</label><select id="copro-civilite" aria-label="Civilité"><option value="">—</option><option>M.</option><option>Mme</option><option>M. ou Mme</option><option>M. et Mme</option></select></div>
           <div class="f c7"><label for="copro-nom">Nom / Raison sociale</label><input id="copro-nom" autocomplete="off"></div>
           <div class="f c6"><label for="copro-adresse1">Adresse</label><input id="copro-adresse1" autocomplete="off"></div>
           <div class="f c6"><label for="copro-adresse2">Complément d'adresse</label><input id="copro-adresse2" autocomplete="off"></div>
@@ -235,11 +235,11 @@ section[hidden]{display:none}
         <h2>Soldes repris de l'ancien syndic</h2>
         <div class="grid">
           <div class="f c3"><label for="copro-date-solde">Solde arrêté au</label><input id="copro-date-solde" value="19/11/2025" autocomplete="off"></div>
-          <div class="f c3"><label for="copro-sens">Sens du solde</label><select id="copro-sens"><option value="">—</option><option value="debiteur">Débiteur (doit au syndicat)</option><option value="crediteur">Créditeur (en sa faveur)</option><option value="solde">Soldé (0,00 €)</option></select></div>
-          <div class="f c2"><label for="copro-solde">Montant du solde (€)</label><input id="copro-solde" class="num" inputmode="decimal" placeholder="0,00"></div>
-          <div class="f c2"><label for="copro-avance">Avance de trésorerie (€)</label><input id="copro-avance" class="num" inputmode="decimal" placeholder="0,00"></div>
-          <div class="f c2"><label for="copro-fonds">Fonds travaux (€)</label><input id="copro-fonds" class="num" inputmode="decimal" placeholder="0,00"></div>
-          <div class="f c8"><label for="copro-points">Points à valider par le gestionnaire</label><textarea id="copro-points" placeholder="Lot sans nature, solde débiteur élevé, coordonnées incomplètes…"></textarea></div>
+          <div class="f c3"><label for="copro-sens">Sens du solde</label><select id="copro-sens" aria-label="Sens du solde"><option value="">—</option><option value="debiteur">Débiteur (doit au syndicat)</option><option value="crediteur">Créditeur (en sa faveur)</option><option value="solde">Soldé (0,00 €)</option></select></div>
+          <div class="f c2"><label for="copro-solde">Montant du solde (€)</label><input id="copro-solde" aria-label="Montant du solde" class="num" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c2"><label for="copro-avance">Avance de trésorerie (€)</label><input id="copro-avance" aria-label="Avance de trésorerie" class="num" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c2"><label for="copro-fonds">Fonds travaux (€)</label><input id="copro-fonds" aria-label="Fonds travaux" class="num" inputmode="decimal" placeholder="0,00"></div>
+          <div class="f c8"><label for="copro-points">Points à valider par le gestionnaire</label><textarea id="copro-points" aria-label="Points à valider (copropriétaire)" placeholder="Lot sans nature, solde débiteur élevé, coordonnées incomplètes…"></textarea></div>
           <div class="f c4"><label for="copro-source">Pièce source (fichier)</label><input id="copro-source" autocomplete="off"></div>
         </div>
         <div class="actions">
@@ -292,7 +292,7 @@ section[hidden]{display:none}
       <div class="f c2"><label for="fournisseur-cp">Code postal</label><input id="fournisseur-cp" autocomplete="off"></div>
       <div class="f c4"><label for="fournisseur-ville">Ville</label><input id="fournisseur-ville" autocomplete="off"></div>
       <div class="f c8"><label for="fournisseur-iban">IBAN</label><input id="fournisseur-iban" autocomplete="off"></div>
-      <div class="f c4"><label for="fournisseur-compte">Compte fournisseur</label><input id="fournisseur-compte" placeholder="401…" autocomplete="off"></div>
+      <div class="f c4"><label for="fournisseur-compte">Compte fournisseur</label><input id="fournisseur-compte" aria-label="Compte fournisseur" placeholder="401…" autocomplete="off"></div>
     </div>
     <div class="actions"><button type="button" class="btn ghost" id="btn-annuler-fournisseur">Annuler</button><button type="submit" class="btn" id="btn-creer-fournisseur">Créer le fournisseur</button></div>
   </form>
